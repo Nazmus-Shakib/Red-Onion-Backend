@@ -37,16 +37,16 @@ app.get("/foods", (req, res) => {
   });
 });
 
-// how get dynamic data of products key asked by user from server
+// // how get dynamic data of products key asked by user from server
 app.get("/food/:id", (req, res) => {
-  const id = req.params.id; // read user request
+  const id = Number(req.params.id); // read user request
 
   client = new MongoClient(uri, { useNewUrlParser: true });
 
   client.connect((err) => {
     const collection = client.db("redOnionRestaurant").collection("foods");
     // perform actions on the collection object
-    collection.find({ id }).toArray((err, documents) => {
+    collection.find({ id: id }).toArray((err, documents) => {
       if (err) {
         console.log(err);
         res.status(500).send({ message: err });
@@ -59,33 +59,36 @@ app.get("/food/:id", (req, res) => {
   });
 });
 
-// client.connect((err) => {
-//   const collection = client.db("redOnionRestaurant").collection("foods");
-//   // perform actions on the collection object
-//   collection.insertOne(
-//     {
-//       name: "Fuchka",
-//       price: 50,
-//       quantity: 20,
-//     },
-//     (err, res) => {
-//       console.log("successfully inserted");
-//     }
-//   );
-//   console.log("database connected...");
-//   client.close();
-// });
-
 // how to post all product data to server
 app.post("/addFood", (req, res) => {
   // save to database
   const food = req.body;
-  client = new MongoClient(uri, {
-    useNewUrlParser: true,
-  });
+  client = new MongoClient(uri, { useNewUrlParser: true });
 
   client.connect((err) => {
     const collection = client.db("redOnionRestaurant").collection("foods");
+    // perform actions on the collection object
+    collection.insert(food, (err, result) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send({ message: err });
+      } else {
+        res.send(result.ops[0]);
+      }
+    });
+
+    client.close();
+  });
+});
+
+// post orders
+app.post("/placeOrder", (req, res) => {
+  // save to database
+  const food = req.body;
+  client = new MongoClient(uri, { useNewUrlParser: true });
+
+  client.connect((err) => {
+    const collection = client.db("redOnionRestaurant").collection("orders");
     // perform actions on the collection object
     collection.insert(food, (err, result) => {
       if (err) {
